@@ -8,6 +8,8 @@ from typing import Callable, Generator, Optional, Tuple
 import cv2
 import numpy as np
 
+from ..config import FPSType
+
 
 @dataclass
 class VideoInfo:
@@ -38,7 +40,7 @@ class VideoInfo:
 
     width: int
     height: int
-    fps: int
+    fps: FPSType
     total_frames: Optional[int] = None
 
     @classmethod
@@ -49,7 +51,7 @@ class VideoInfo:
 
         width = int(video.get(cv2.CAP_PROP_FRAME_WIDTH))
         height = int(video.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        fps = int(video.get(cv2.CAP_PROP_FPS))
+        fps = FPSType(video.get(cv2.CAP_PROP_FPS))
         total_frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
         video.release()
         return VideoInfo(width, height, fps, total_frames)
