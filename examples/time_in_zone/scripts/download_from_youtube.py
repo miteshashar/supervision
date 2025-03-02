@@ -2,7 +2,7 @@ import argparse
 import os
 from typing import Optional
 
-from pytube import YouTube
+from pytubefix import YouTube
 
 
 def main(url: str, output_path: Optional[str], file_name: Optional[str]) -> None:

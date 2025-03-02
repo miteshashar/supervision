@@ -1,5 +1,7 @@
 import argparse
+import json
 from collections import defaultdict, deque
+from pathlib import Path
 
 import cv2
 import numpy as np
@@ -70,7 +72,7 @@ if __name__ == "__main__":
     args = parse_arguments()
 
     video_info = sv.VideoInfo.from_video_path(video_path=args.source_video_path)
-    model = YOLO("yolov8x.pt")
+    model = YOLO("yolov8x.mlpackage")
 
     byte_track = sv.ByteTrack(
         frame_rate=video_info.fps, track_activation_threshold=args.confidence_threshold
@@ -97,9 +99,10 @@ if __name__ == "__main__":
     polygon_zone = sv.PolygonZone(polygon=SOURCE)
     view_transformer = ViewTransformer(source=SOURCE, target=TARGET)
 
-    coordinates = defaultdict(lambda: deque(maxlen=video_info.fps))
+    coordinates = defaultdict(lambda: deque(maxlen=int(video_info.fps)))
 
     with sv.VideoSink(args.target_video_path, video_info) as sink:
+        speeds = []
         for frame in frame_generator:
             result = model(frame)[0]
             detections = sv.Detections.from_ultralytics(result)
@@ -117,9 +120,11 @@ if __name__ == "__main__":
                 coordinates[tracker_id].append(y)
 
             labels = []
+            current_speeds = {}
             for tracker_id in detections.tracker_id:
                 if len(coordinates[tracker_id]) < video_info.fps / 2:
                     labels.append(f"#{tracker_id}")
+                    current_speeds[str(tracker_id)] = 0.0
                 else:
                     coordinate_start = coordinates[tracker_id][-1]
                     coordinate_end = coordinates[tracker_id][0]
@@ -127,6 +132,7 @@ if __name__ == "__main__":
                     time = len(coordinates[tracker_id]) / video_info.fps
                     speed = distance / time * 3.6
                     labels.append(f"#{tracker_id} {int(speed)} km/h")
+                    current_speeds[str(tracker_id)] = round(float(speed), 2)
 
             annotated_frame = frame.copy()
             annotated_frame = trace_annotator.annotate(
@@ -140,7 +146,11 @@ if __name__ == "__main__":
             )
 
             sink.write_frame(annotated_frame)
-            cv2.imshow("frame", annotated_frame)
-            if cv2.waitKey(1) & 0xFF == ord("q"):
-                break
-        cv2.destroyAllWindows()
+            speeds.append(current_speeds)
+            # cv2.imshow("frame", annotated_frame)
+            # if cv2.waitKey(1) & 0xFF == ord("q"):
+            #     break
+        # Dump speeds to a JSON file
+        speeds_path = Path(args.target_video_path).with_suffix(".json")
+        speeds_path.write_text(json.dumps(speeds, indent=2))
+        # cv2.destroyAllWindows()

@@ -153,3 +153,13 @@ Desktop.ini
 *~
 .directory
 .Trash-*
+
+# Downloaded/generated files
+/*.mp4
+/*.json
+/*.csv
+data/
+
+# Model files
+/*.pt
+/*.mlpackage

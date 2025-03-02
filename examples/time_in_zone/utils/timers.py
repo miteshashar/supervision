@@ -4,6 +4,7 @@ from typing import Dict
 import numpy as np
 
 import supervision as sv
+from supervision.config import FPSType
 
 
 class FPSBasedTimer:
@@ -18,7 +19,7 @@ class FPSBasedTimer:
             at which it was first detected.
     """
 
-    def __init__(self, fps: int = 30) -> None:
+    def __init__(self, fps: FPSType = 30.0) -> None:
         """Initializes the FPSBasedTimer with the specified frames per second rate.
 
         Args:

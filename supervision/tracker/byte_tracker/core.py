@@ -2,6 +2,7 @@ from typing import List, Tuple
 
 import numpy as np
 
+from supervision.config import FPSType
 from supervision.detection.core import Detections
 from supervision.detection.utils import box_iou_batch
 from supervision.tracker.byte_tracker import matching
@@ -42,7 +43,7 @@ class ByteTrack:
         track_activation_threshold: float = 0.25,
         lost_track_buffer: int = 30,
         minimum_matching_threshold: float = 0.8,
-        frame_rate: int = 30,
+        frame_rate: FPSType = 30.0,
         minimum_consecutive_frames: int = 1,
     ):
         self.track_activation_threshold = track_activation_threshold
